@@ -9,27 +9,14 @@ from db import get_db
 import functools
 from forms import NuevoProducto
 
-recupera = False
+
 correo_envia = 'mintic202221@gmail.com'
 contraseña_envia = 'Mintic2022'
 yag = yagmail.SMTP(user=correo_envia, password=contraseña_envia)
 
-tema_registro = 'Activa tu cuenta'
-contenido_registro = [
-    'Estas a un paso de completar tu registro en HyattLumpur Hotel\n'
-    'Da clic en el siguiente link\n'
-    'link'
-]
-tema_reserva = 'Recibo de su reserva'
 
 tema_recupera = '¿Olvidaste tu contraseña'
-recupera_contenido = [
-    'Para restablecer tu contraseña da click en el siguiente enlace\n'
-    'ENLACE'
-    'Si no solicitaste un cambio de contraseña da clic en el siguiente enlace\n'
-    'ENLACE'
 
-]
 
 app = Flask(__name__)
 app.secret_key = os.urandom(12)
@@ -42,7 +29,7 @@ superAdmin = False
 def inicio():
     # Si inicio sesion -> Mostrar bienvenida, y cambio de navbar
     # Sino -> mantener rol de visitante
-    return render_template('index.html', inicioS=inicioS)
+    return render_template('index.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin)
 
 
 @app.route('/iniciar', methods=['POST', 'GET'])
@@ -66,14 +53,14 @@ def iniciar():
                 return render_template('iniciar.html')
             db = get_db()
             user = db.execute(
-                'SELECT * FROM usuarios WHERE nombre_usuario= ?', (username, )).fetchone()
+                'SELECT * FROM usuarios WHERE usuario= ?', (username, )).fetchone()
             db.close()
             if user is None:
                 error = 'Usuario o contraseña inválidos'
                 flash(error)
                 return render_template('iniciar.html')
             else:
-                store_password = user[7]
+                store_password = user[10]
                 result = check_password_hash(store_password, password)
                 if result is False:
                     error = 'Usuario o contraseña inválidos'
@@ -83,14 +70,16 @@ def iniciar():
                     session.clear()
                     inicioS = False
                     session['user_id'] = user[0]
-            adminL = user[6]
-            if adminL == 'USER':
+            adminL = user[13]
+            if adminL == 'admin':
                 admin = True
-            if adminL == 'SADMIN':
+            if adminL == 'superAdmin':
                 superAdmin = True
             inicioS = True
+            print(superAdmin)
+            print(admin)
             return redirect(url_for('productos'))
-        return render_template('iniciar.html', inicioS=inicioS)
+        return render_template('iniciar.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin)
     except Exception as e:
         return render_template('iniciar.html')
 
@@ -144,7 +133,7 @@ def load_logged_in_user():
     else:
         db = get_db()
         g.user = db.execute(
-            'SELECT * FROM usuarios WHERE id_usuario = ?', (user_id, )).fetchone()
+            'SELECT * FROM usuarios WHERE id = ?', (user_id, )).fetchone()
 
 
 @app.route('/registro', methods=['GET', 'POST'])
@@ -152,46 +141,61 @@ def registro():
     try:
         if request.method == 'POST':
             nombre = request.form['nombre']
-            tipo_documento = request.form['tipo']
-            pais = request.form['pais']
-            numero = request.form['numero']
-            email = request.form['email']
-            password = request.form['contrasena']
+            apellido = request.form['apellido']
+            cedula = request.form['cedula']
+            correo = request.form['correo']
+            sexo = request.form['sexo']
+            fecha = request.form['fechaNacimiento']
+            direccion = request.form['direccion']
+            ciudad = request.form['ciudad']
+            usuario = request.form['usuario']
+            contrasena = request.form['contrasena']
             confirma = request.form['confirma']
-            telefono = request.form['telefono']
-            error = None
-            exito = False
+
             if not utils.isUsernameValid(nombre):
-                error = "El usuario no es valido"
+                error = "El nombre no es valido"
                 flash(error)
                 return render_template('registro.html')
 
-            if not utils.isNumberValid(numero):
+            if not utils.isEmpty(fecha):
+                error = "La fecha es invalida"
+                flash(error)
+                return render_template('registro.html')
+
+            if not utils.isEmpty(direccion):
+                error = "La direccion es invalida"
+                flash(error)
+                return render_template('registro.html')
+
+            if not utils.isUsernameValid(apellido):
+                error = "El apellido no es valido"
+                flash(error)
+                return render_template('registro.html')
+
+            if not utils.isNumberValid(cedula):
                 error = "El número de documento no es valido"
                 flash(error)
                 return render_template("registro.html")
 
-            if not utils.isEmailValid(email):
-                error = "El email no es valido"
+            if not utils.isEmailValid(correo):
+                error = "El correo no es valido"
                 flash(error)
                 return render_template('registro.html')
 
-            if not utils.isPasswordValid(password):
+            if not utils.isPasswordValid(contrasena):
                 error = "La contraseña no es valida"
                 flash(error)
                 return render_template('registro.html')
 
             if not utils.isPasswordValid(confirma):
                 error = "La confirmación no es valida"
-                if (password != confirma):
+                if (contrasena != confirma):
                     error = "La contraseña debe coincidir con la confirmación"
                 flash(error)
                 return render_template('registro.html')
 
-            if not utils.isPhoneValid(telefono):
-                error = "El número de telefono no es valido"
-                flash(error)
-                return render_template("registro.html")
+            error = None
+            exito = False
 
             try:
                 terminos = request.form['terminos']
@@ -199,46 +203,43 @@ def registro():
                 e = "Debe aceptar los terminos y condiciones antes de avanzar"
                 flash(e)
                 return render_template("registro.html")
-
+            print("c")
             db = get_db()
 
             demail = db.execute(
-                'SELECT id FROM usuarios WHERE Email=?', (email,)).fetchone()
+                'SELECT id FROM usuarios WHERE correo=?', (correo,)).fetchone()
             user = db.execute(
-                'SELECT id FROM usuarios WHERE Nombre=?', (nombre,)).fetchone()
+                'SELECT id FROM usuarios WHERE cedula=?', (cedula,)).fetchone()
 
             if user is not None:
-                error = 'El usuario ya existe'.format(nombre)
+                error = 'El usuario ya existe'.format(usuario)
                 flash(error)
 
                 return render_template('registro.html')
 
             if demail is not None:
-                error = 'El usuario ya existe'.format(email)
+                error = 'El usuario ya existe'.format(correo)
                 flash(error)
 
                 return render_template('registro.html')
-
+            print("d")
             try:
-                db.execute('INSERT INTO usuarios (Nombre,Tipo_Documento,Numero,Pais,Email,Contraseña,Telefono) VALUES (?,?,?,?,?,?,?)',
-                           (nombre, tipo_documento, numero, pais, email, generate_password_hash(password), telefono))
-
+                db.execute('INSERT INTO usuarios (nombre,apellido,cedula,correo,sexo,fecha_nacimiento,direccion,ciudad,usuario,contraseña) VALUES (?,?,?,?,?,?,?,?,?,?)',
+                           (nombre, apellido, cedula, correo, sexo, fecha, direccion, ciudad, usuario, generate_password_hash(contrasena)))
                 db.commit()
                 db.close()
-                yag.send(to=email, subject=tema_registro,
-                         contents=contenido_registro)
                 exito = True
+                print("e")
                 render_template('registro.html')
             except Exception as e:
                 print("")
             return redirect(url_for('iniciar'))
-
         return render_template('registro.html')
     except Exception as e:
         return render_template('registro.html')
 
 
-@app.route('/', methods=['POST', 'GET'])
+@app.route('/recuperar', methods=['POST', 'GET'])
 def recuperar():
     global recuperar
     try:
@@ -252,25 +253,44 @@ def recuperar():
                 return render_template('recuperar.html')
             db = get_db()
             validacion = db.execute(
-                'SELECT Email FROM usuarios WHERE Email=?', (email,)).fetchone()
+                'SELECT correo FROM usuarios WHERE correo=?', (email,)).fetchone()
             if validacion is None:
                 error = 'El usuario no existe'.format(email)
                 flash(error)
                 return render_template('recuperar.html')
             exito = True
-            recuperar = True
-            flash('Hemos enviado un mensaje a su correo')
+            id_usuario = db.execute(
+                'SELECT id FROM usuarios WHERE correo=?', (email,)).fetchone()
+            id_usuario = str(id_usuario)
+            id_usuario = id_usuario.replace('(', '')
+            id_usuario = id_usuario.replace(')', '')
+            id_usuario = id_usuario.replace("'", "")
+            id_usuario = id_usuario.replace(",", "")
+            id_usuario = id_usuario.replace('"', '')
+            codigo =  db.execute(
+                'SELECT contrasena FROM usuarios WHERE correo=?', (email,)).fetchone()
+            codigo = str(codigo)
+            codigo = codigo.replace('(', '')
+            codigo = codigo.replace(')', '')
+            codigo = codigo.replace("'", "")
+            codigo = codigo.replace(",", "")
+            codigo = codigo.replace('"', '')
+            db.execute(
+                'UPDATE estadoCuenta SET codigo_seguridad = :nuevoCodigo WHERE id_usuarios = :id', {"nuevoCodigo": codigo, "id": id_usuario})
+            recupera_contenido = (
+                'Para restablecer tu contraseña ingresa al enlace y utiliza tu codigo de seguridad(recuerda usarlo sin espacios)\n\nCodigo:%s\n\nEnlace:%s') % (codigo,"link: localhost:5000/restablecer")
             yag.send(to=email, subject=tema_recupera,
-                     contents=recupera_contenido)
+                   contents=recupera_contenido)
+            db.commit()
+            db.close()
+            flash('Hemos enviado un mensaje a su correo')
+            print(recupera_contenido)
+            print(id_usuario)
             return render_template('recuperar.html', inicioS=inicioS, exito=exito)
         return render_template('recuperar.html', inicioS=inicioS)
     except Exception as e:
+        print(e)
         return render_template('recuperar.html', inicioS=inicioS)
-
-
-@app.route('/habitacion', methods=['GET'])
-def habitacion():
-    return render_template('habitacion.html', inicioS=inicioS)
 
 
 @app.route('/restablecer', methods=['GET', 'POST'])
@@ -278,13 +298,61 @@ def restablecer():
     try:
         if request.method == 'POST':
             db = get_db()
-            db.execute()
-            # 'UPDATE usuarios SET password = :nueva WHERE id_usuario = :id', {"nueva": disponibilidad, "id":id_u})
+            id_u = request.form['seguridad']
+            nueva = request.form['nueva']
+            confirma = request.form['confirma']
+            validacion = db.execute(
+                'SELECT codigo_seguridad FROM estadoCuenta WHERE codigo_seguridad=?', (id_u,)).fetchone()
+            if validacion is None:
+                error = "El codigo no es valido"
+                flash(error, category="info")
+                print(error)
+                return render_template("restablecer.html")
+            print(validacion)
+            if not utils.isPasswordValid(nueva):
+                error = "La contraseña no es valida"
+                flash(error, category="info")
+                return render_template("restablecer.html")
+            print("AJA8")
+            if not utils.isPasswordValid(confirma):
+                error = "La confirmación no es valida"
+                if (nueva != confirma):
+                    error = "La contraseña debe coincidir con la confirmación"
+                flash(error, category="info")
+                return render_template("restablecer.html")
+            print("AJA4")
+            validacion = db.execute(
+                'SELECT codigo_seguridad FROM estadoCuenta WHERE codigo_seguridad=?', (id_u,)).fetchone()
+            id_usuario = db.execute(
+                'SELECT id_usuarios FROM estadoCuenta WHERE codigo_seguridad=?', (id_u,)).fetchone()
+            id_usuario = str(id_usuario)
+            id_usuario = id_usuario.replace('(', '')
+            id_usuario = id_usuario.replace(')', '')
+            id_usuario = id_usuario.replace("'", "")
+            id_usuario = id_usuario.replace(",", "")
+            id_usuario = id_usuario.replace('"', '')
+            print(id_usuario)
+            db.execute(
+                'UPDATE usuarios SET contrasena  = :nueva WHERE id = :id', {"nueva": generate_password_hash(nueva), "id": id_usuario})
+            nuevaSeguridad = db.execute(
+                'SELECT contrasena FROM usuarios WHERE id = :id', {"id": id_usuario}).fetchone()
+            nuevaSeguridad = str(nuevaSeguridad)
+            nuevaSeguridad = nuevaSeguridad.replace('(', '')
+            nuevaSeguridad = nuevaSeguridad.replace(')', '')
+            nuevaSeguridad = nuevaSeguridad.replace("'", "")
+            nuevaSeguridad = nuevaSeguridad.replace(",", "")
+            nuevaSeguridad = nuevaSeguridad.replace('"', '')
+            print(nuevaSeguridad)
+            db.execute(
+                'UPDATE estadoCuenta SET codigo_seguridad = :nuevoCodigo WHERE id_usuarios = :id', {"nuevoCodigo": nuevaSeguridad, "id": id_usuario})
             db.commit()
             db.close()
+            flash("Se ha cambiado su contraseña", category="success")
+            return render_template("restablecer.html")
+        return render_template("restablecer.html")
     except Exception as e:
-        return render_template('restablecer.html')
-    return render_template('restablecer.html')
+        print(e)
+        return render_template("restablecer.html")
 
 
 @app.route('/productos', methods=['POST', 'GET'])
@@ -297,7 +365,7 @@ def productos():
     productos = []
     for pro in lista_productos.items():
         productos.append(pro[1])
-    return render_template("productos.html", productos=productos, inicioS=inicioS)
+    return render_template("productos.html", productos=productos, inicioS=inicioS, superAdmin=superAdmin, admin=admin)
 
 
 @app.route('/calificacion', methods=['GET', 'POST'])
@@ -377,24 +445,24 @@ def comentarios():
         return render_template('comentarios.html', inicioS=inicioS, nombre=nombre, fecha=fecha, comentarios=comentarios, tamano=tamano)
     except Exception as e:
         flash(e)
-    return render_template('comentarios.html', inicioS=inicioS)
+    return render_template('comentarios.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin)
 
 
 @app.route('/cambiar', methods=['GET', 'POST'])
 def cambiar():
     return render_template('cambiar.html')
 
-
+@login_required
 @app.route('/perfil', methods=['GET', 'POST'])
 def perfil():
     return render_template('perfil.html')
 
-
+@login_required
 @app.route('/listaDeseos', methods=['GET', 'POST'])
 def listaDeseos():
     return render_template('listaDeseos.html')
 
-
+@login_required
 @app.route('/carrito', methods=['GET', 'POST'])
 def carrito():
     return render_template('carrito.html')

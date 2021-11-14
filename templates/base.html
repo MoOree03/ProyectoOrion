@@ -49,12 +49,26 @@
                 <div class="u-custom-menu u-nav-container">
                     <ul class="u-nav u-spacing-2 u-unstyled u-nav-1">
                         {% if inicioS %}
+                        {% if superAdmin %}
+                        <li class="u-nav-item"><a class="u-button-style u-nav-link" href="/superUser"
+                                style="padding: 10px 20px;">SuperHerramientas</a>
+                        </li>
+                        {% endif %}
+                        {% if admin %}
+                        <li class="u-nav-item"><a class="u-button-style u-nav-link" href="/herramientas"
+                                style="padding: 10px 20px;">Herramientas</a>
+                        </li>
+                        {% endif %}
                         <li class="u-nav-item"><a class="u-button-style u-nav-link" href="/"
                                 style="padding: 10px 20px;">Inicio</a>
                         </li>
+                        
                         <li class="u-nav-item"><a class="u-button-style u-nav-link" href="productos"
                                 style="padding: 10px 20px;">Productos</a>
                         </li>
+                        <li class="u-nav-item"><a class="u-button-style u-nav-link" href="perfil"
+                            style="padding: 10px 20px;">Perfil</a>
+                    </li>
                         <li class="u-nav-item"><a class="u-button-style u-nav-link" href="salir"
                                 style="padding: 10px 20px;">Cerrar
                                 Sesion</a>

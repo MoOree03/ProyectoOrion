@@ -4,24 +4,37 @@
 <link rel="stylesheet" href="/static/css/restablecerCon.css" media=" screen"> {% endblock %}
 {% block contenido %}
 
-<section class="u-align-left u-clearfix u-grey-10 u-section-1" id="sec-000c">
+<section class="u-align-center u-clearfix u-grey-10 u-section-1" id="sec-000c">
+  {% with messages = get_flashed_messages(category_filter=["info"]) %}
+  {% if messages %}
+  {%for message in messages %}
+  <div class="alert alert-danger text-center">{{message}}</div>
+  {% endfor%}
+  {% endif %}
+  {% endwith %}
+
+
   <div class="u-clearfix u-sheet u-sheet-1">
-    <div class="u-container-style u-group u-radius-50 u-shape-round u-white u-group-1">
+    <div class="mb-u-container-style u-group u-radius-50 u-shape-round u-white u-group-1">
       <div class="u-container-layout u-container-layout-1">
         <h1 class="u-text u-text-default u-text-1">Restablecer contraseña</h1>
         <div class="u-form u-form-1">
-          <form action="{{url_for('restablecer')}} method=" POST"
-            class="u-clearfix u-form-spacing-15 u-form-vertical u-inner-form" style="padding: 15px;" source="custom"
-            name="form">
+          <form name="formulario" action="{{url_for('restablecer')}}" method="POST"
+            class="u-clearfix u-form-spacing-15 u-inner-form" style="padding: 15px;" source="custom">
             <div class="u-form-group u-form-textarea u-form-group-1">
-              <label for="textarea-9040" class="u-label">Nueva contraseña</label>
-              <input rows="1" cols="50" id="textarea-9040" name="textarea-4"
-                class="u-border-1 u-border-grey-30 u-input u-input-rectangle" required="required" type="text">
+              <label for="seguridad" class="u-label">Codigo de seguridad</label>
+              <input rows="1" cols="50" id="seguridad" name="seguridad"
+                class="u-border-1 u-border-grey-30 u-input u-input-rectangle" type="text">
+            </div>
+            <div class="u-form-group u-form-textarea u-form-group-1">
+              <label for="nueva" class="u-label">Nueva contraseña</label>
+              <input rows="1" cols="50" id="nueva" name="nueva"
+                class="u-border-1 u-border-grey-30 u-input u-input-rectangle" type="password">
             </div>
             <div class="u-form-group u-form-textarea u-form-group-2">
-              <label for="textarea-a34d" class="u-label">Confirmar nueva contraseña</label>
-              <input rows="1" cols="50" id="textarea-a34d" name="textarea-5"
-                class="u-border-1 u-border-grey-30 u-input u-input-rectangle" required="required" type="text">
+              <label for="confirma" class="u-label">Confirmar nueva contraseña</label>
+              <input rows="1" cols="50" id="confirma" name="confirma"
+                class="u-border-1 u-border-grey-30 u-input u-input-rectangle" type="password">
             </div>
             <div class="u-align-center u-form-group u-form-submit">
               <a href="#"
@@ -36,6 +49,13 @@
       </div>
     </div>
   </div>
+  {% with messages = get_flashed_messages(category_filter=["success"]) %}
+  {% if messages %}
+  {%for message in messages %}
+  <div class="alert alert-success text-center">{{message}}</div>
+  {% endfor%}
+  {% endif %}
+  {% endwith %}
 </section>
 
 
