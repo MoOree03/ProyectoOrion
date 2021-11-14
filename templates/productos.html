@@ -13,22 +13,22 @@
                     <!-- Inicia primera carta -->
                     <div class="card">
                         <!-- Imagen del producto -->
-                        <a href="/productos/{{pro.cod}}" style="text-decoration: none;">
-                            <img src="{{pro.imagen}}" class="card-img-top" alt="...">
+                        <a href="/productos/{{pro[0]}}" style="text-decoration: none;">
+                            <img src="{{pro[4]}}" class="card-img-top" alt="...">
                         </a>
                         <!-- Inicia cuerpo de la carta donde va nombre y precio del producto -->
                         <div class="card-body">
                             <!-- Nombre del producto  -->
-                            <a href="/productos/{{pro.cod}}" style="text-decoration: none;">
-                                <h5 class="card-title">{{pro.nombre}}</h5>
+                            <a href="/productos/{{pro[0]}}" style="text-decoration: none;">
+                                <h5 class="card-title">{{pro[2]}}</h5>
                             </a>
                             <!-- Precio del producto -->
-                            <p class="card-text">${{pro.precio}}</p>
+                            <p class="card-text">${{pro[6]}}</p>
                             <!-- Empieza el contenedor de corazon de fav y boton de add. -->
                             <span class="text-900 text-a">
                                 <!-- boton de fav-->
                                 <div>
-                                    <a href="listadeseos/agregar/{{usuario_sesion}}/{{pro.cod}}">
+                                    <a href="listadeseos/agregar/{{usuario_sesion}}/{{pro[0]}}">
                                         <button type="button" class="btn btn-outline-primary btn-sm"
                                             style="border-color: #ffffff;padding-top: 0px;padding-bottom: 0px;padding-left: 0px;padding-right: 0px;border-top-width: 0px;border-bottom-width: 0px;border-left-width: 0px;border-right-width: 0px;">
                                             <!-- icono de corazon -->
@@ -44,7 +44,7 @@
                                 <!-- fin del boton de fav -->
                                 <!-- inicio de boton de agregar al carrito                     -->
                                 <div>
-                                    <a href="carrito/agregar/{{usuario_sesion}}/{{pro.cod}}">
+                                    <a href="carrito/agregar/{{usuario_sesion}}/{{pro[0]}}">
                                         <button type="button" class="btn btn-primary">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                                                 fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16">

@@ -345,16 +345,13 @@ def restablecer():
 
 @app.route('/productos', methods=['POST', 'GET'])
 def productos():
-    lista_productos = {"pro1": {"nombre": "Tomate", "descripcion": "Tomate rojo vendido por libre", "precio": 1800, "imagen": "../static/img/tomate.jpg", "cod": "pro1"},
-                       "pro2": {"nombre": "Cebolla", "descripcion": "Cebollla cabezona vendida por libra", "precio": 1700, "imagen": "../static/img/cebolla.jpg", "cod": "pro2"},
-                       "pro3": {"nombre": "Papa", "descripcion": "Papa pastusa vendida por libra", "precio": 1450, "imagen": "../static/img/papa.jpg", "cod": "pro3"},
-                       "pro4": {"nombre": "Yuca", "descripcion": "Yuca de la buena vendida por libra", "precio": 900, "imagen": "../static/img/yuca.jpg", "cod": "pro4"},
-                       "pro5": {"nombre": "Cilantro", "descripcion": "Cilantro para el caldo vendida por libra", "precio": 500, "imagen": "../static/img/cilantro.jpg", "cod": "pro5"}}
-    productos = []
-    for pro in lista_productos.items():
-        productos.append(pro[1])
-    return render_template("productos.html", productos=productos, inicioS=inicioS, superAdmin=superAdmin, admin=admin)
-
+    sql = "SELECT * FROM productos"
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(sql)
+    productos = cursor.fetchall()
+    db.close()
+    return render_template("productos.html", inicioS=inicioS, productos=productos, superAdmin=superAdmin, admin=admin)
 
 
 @app.route('/cambiar', methods=['GET', 'POST'])
@@ -371,13 +368,13 @@ def cambiar():
             store_password = user[10]
             if not utils.isEmpty(anterior):
                 error = "La contraseña anterior no es invalida"
-                flash(error,category='info')
-                return render_template('cambiar.html',inicioS=inicioS, superAdmin=superAdmin, admin=admin)
+                flash(error, category='info')
+                return render_template('cambiar.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin)
             result = check_password_hash(store_password, anterior)
             if result is False:
-                    error = 'La contraseña no coincide!'
-                    flash(error,category="info")
-                    return render_template('cambiar.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin)
+                error = 'La contraseña no coincide!'
+                flash(error, category="info")
+                return render_template('cambiar.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin)
             if not utils.isPasswordValid(nueva):
                 error = "La contraseña no es valida"
                 flash(error, category="info")
@@ -398,7 +395,6 @@ def cambiar():
     except Exception as e:
         print(e)
         return render_template('cambiar.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin)
-    
 
 
 @app.route('/perfil', methods=['GET', 'POST'])
@@ -426,30 +422,30 @@ def perfil():
             ciudadC = request.form['ciudad']
             if not utils.isEmpty(nombreC):
                 error = "El nombre es invalido"
-                flash(error,category='info')
+                flash(error, category='info')
                 return render_template('perfil.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin, nombre=nombre, apellido=apellido, sexo=sexo, fecha=fecha, direccion=direccion, ciudad=ciudad, numeroCompras=numeroCompras, bonos=bonos)
             if not utils.isEmpty(apellidoC):
                 error = "El apellido es invalido"
-                flash(error,category='info')
+                flash(error, category='info')
                 return render_template('perfil.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin, nombre=nombre, apellido=apellido, sexo=sexo, fecha=fecha, direccion=direccion, ciudad=ciudad, numeroCompras=numeroCompras, bonos=bonos)
             if not utils.isEmpty(sexoC):
                 error = "El sexo es invalido"
-                flash(error,category='info')
+                flash(error, category='info')
                 return render_template('perfil.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin, nombre=nombre, apellido=apellido, sexo=sexo, fecha=fecha, direccion=direccion, ciudad=ciudad, numeroCompras=numeroCompras, bonos=bonos)
             if not utils.isEmpty(direccionC):
                 error = "La dirección es invalida"
-                flash(error,category='info')
+                flash(error, category='info')
                 return render_template('perfil.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin, nombre=nombre, apellido=apellido, sexo=sexo, fecha=fecha, direccion=direccion, ciudad=ciudad, numeroCompras=numeroCompras, bonos=bonos)
             if not utils.isEmpty(ciudad):
                 error = "La ciudad es invalida"
-                flash(error,category='info')
+                flash(error, category='info')
                 return render_template('perfil.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin, nombre=nombre, apellido=apellido, sexo=sexo, fecha=fecha, direccion=direccion, ciudad=ciudad, numeroCompras=numeroCompras, bonos=bonos)
 
             db.execute(
-                'UPDATE usuarios SET nombre = :nombre, apellido = :apellido, sexo = :sexo, fecha_nacimiento = :fecha, direccion = :direccion, ciudad = :ciudad WHERE id = :id', {"nombre": nombreC, "apellido": apellidoC, "sexo": sexoC, "fecha": fechaC, "direccion": direccionC, "ciudad": ciudadC,"id":id_user})
+                'UPDATE usuarios SET nombre = :nombre, apellido = :apellido, sexo = :sexo, fecha_nacimiento = :fecha, direccion = :direccion, ciudad = :ciudad WHERE id = :id', {"nombre": nombreC, "apellido": apellidoC, "sexo": sexoC, "fecha": fechaC, "direccion": direccionC, "ciudad": ciudadC, "id": id_user})
             db.commit()
             db.close()
-            flash("Recargue la pagina para ver los cambios!",category="success")
+            flash("Recargue la pagina para ver los cambios!", category="success")
             return render_template('perfil.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin, nombre=nombre, apellido=apellido, sexo=sexo, fecha=fecha, direccion=direccion, ciudad=ciudad, numeroCompras=numeroCompras, bonos=bonos)
         return render_template('perfil.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin, nombre=nombre, apellido=apellido, sexo=sexo, fecha=fecha, direccion=direccion, ciudad=ciudad, numeroCompras=numeroCompras, bonos=bonos)
     except Exception as e:
@@ -463,12 +459,11 @@ def eliminarCuenta():
     if request.method == 'GET':
         id_usuario = session['user_id']
         db = get_db()
-        db.execute("DELETE FROM usuarios WHERE id= :id",{"id":id_usuario})
+        db.execute("DELETE FROM usuarios WHERE id= :id", {"id": id_usuario})
         db.commit()
         db.close()
     return render_template("index.html")
 
-    
 
 @app.route('/listaDeseos', methods=['GET', 'POST'])
 @login_required
@@ -486,43 +481,7 @@ def carrito():
 @app.route('/herramientas', methods=['GET'])
 @admin_required
 def herramienta():
-    return render_template('herramientas.html', superAdmin=superAdmin)
-
-
-@app.route('/gestion', methods=['POST', 'GET'])
-@admin_required
-def gestion():
-    try:
-        if request.method == 'POST':
-            try:
-                db = get_db()
-                comentarios = db.execute(
-                    'SELECT id,id_Usuario,Calificacion,Comentario FROM Comentarios').fetchall()
-                for i in comentarios:
-                    flash(i, category='warning')
-            except Exception as e:
-                print("")
-            try:
-                terminos = request.form['terminos']
-            except Exception as e:
-                return render_template('gestion.html')
-
-            try:
-                eliminar = request.form['eliminar']
-                db.execute(
-                    'DELETE FROM Comentarios WHERE id = ?', (eliminar,))
-                db.commit()
-                db.close()
-                flash("El comentario fue eliminado exitosamente",
-                      category='success')
-
-                return render_template('gestion.html')
-            except Exception as e:
-                return render_template('gestion.html')
-    except Exception as e:
-        print("")
-        return render_template('gestion.html')
-    return render_template('gestion.html')
+    return render_template('herramientas.html', superAdmin=superAdmin, admin=admin)
 
 
 @app.route('/editar', methods=['POST', 'GET'])
@@ -532,188 +491,148 @@ def editar():
         if request.method == 'POST':
             try:
                 db = get_db()
-                habitaciones = db.execute(
-                    'SELECT habitacion,estado FROM habitaciones').fetchall()
-
-                for i in habitaciones:
+                usuarios = db.execute(
+                    'SELECT * FROM usuarios WHERE rol = :rol', {"rol": "usuario"}).fetchall()
+                for i in usuarios:
                     flash(i, category='info')
-
             except Exception as e:
                 flash(e)
             try:
                 db = get_db()
-                id_habitacion = request.form['id']
-                id_habi = db.execute('SELECT habitacion FROM habitaciones WHERE habitacion = :id', {
-                                     "id": id_habitacion}).fetchone()
+                id_req = request.form['id']
+                casilla = request.form['casilla']
                 nombre = request.form['nombre']
-
-                if len(nombre) >= 3:
+                usuarioCa = db.execute(
+                    'SELECT * FROM usuarios WHERE id = :id', {"id": id_req}).fetchone()
+                usuarioCa = list(usuarioCa)
+                casilla = int(casilla)
+                if utils.isEmpty(nombre) is True:
+                    print(usuarioCa[casilla])
+                    usuarioCa[casilla] = nombre
                     db.execute(
-                        'UPDATE habitaciones SET habitacion = :nombre WHERE habitacion = :id', {"nombre": nombre, "id": id_habi[0]})
+                        'UPDATE usuarios SET id = :id, nombre = :nombre, apellido=:apellido, cedula = :cedula, correo = :correo, sexo = :sexo, fecha_nacimiento = :fecha,direccion=:direccion,ciudad=:ciudad,usuario = :usuario, contrasena = :contrasena, acumulado_compras = :compras,bonos_acumulados=:bonos WHERE id = :id', {"id": usuarioCa[0], "nombre": usuarioCa[1], "apellido": usuarioCa[2], "cedula": usuarioCa[3], "correo": usuarioCa[4], "sexo": usuarioCa[5], "fecha": usuarioCa[6], "direccion": usuarioCa[7], "ciudad": usuarioCa[8], "usuario": usuarioCa[9], "contrasena": usuarioCa[10], "compras": usuarioCa[11], "bonos": usuarioCa[12], "id": id_req})
                     db.commit()
-                    flash("Se realizo la edición de la habitación",
+                    print("b")
+                    flash("Se realizo la actualización de datos!",
                           category='success')
-                    return render_template('editar.html')
+                    return render_template('editar.html', superAdmin=superAdmin, admin=admin)
             except Exception as e:
-                return render_template('editar.html')
-            try:
-                db = get_db()
-                disponibilidad = request.form['disponibilidad']
-                db.execute(
-                    'UPDATE habitaciones SET estado = :estado WHERE habitacion = :id', {"estado": disponibilidad, "id": id_habi[0]})
-                db.commit()
-                db.close()
-                flash("Se realizo la edición de la habitación", category='success')
-                return render_template('editar.html')
-            except Exception as e:
-                return render_template('editar.html')
-        return render_template('editar.html')
+                print(e)
+                return render_template('editar.html', superAdmin=superAdmin, admin=admin)
+        return render_template('editar.html', superAdmin=superAdmin, admin=admin)
     except Exception as e:
-        return render_template('editar.html')
-
-
-@app.route('/agregar', methods=['POST', 'GET'])
-@admin_required
-def agregar():
-    try:
-        exito = False
-        consulta = False
-        if request.method == 'POST':
-            try:
-                db = get_db()
-                habitaciones = db.execute(
-                    'SELECT habitacion FROM habitaciones').fetchall()
-                for i in habitaciones:
-                    flash(i)
-            except Exception as e:
-                flash(e)
-            try:
-                crear = request.form['crear']
-                if len(crear) >= 3:
-                    db.execute(
-                        'INSERT INTO habitaciones (habitacion,estado) VALUES(?,?)', (crear, "Disponible"))
-                    db.commit()
-                    db.close()
-                    exito = True
-                    flash("La habitación fue creada exitosamente",
-                          category='success')
-                    return render_template('agregar.html', exito=exito)
-            except Exception as e:
-                return render_template('agregar.html')
-        return render_template('agregar.html', exito=exito)
-    except Exception as e:
-        return render_template('agregar.html', exito=exito)
-
-
-@app.route('/eliminar', methods=['POST', 'GET'])
-@admin_required
-def eliminar():
-    try:
-        exito = False
-        if request.method == 'POST':
-            try:
-                db = get_db()
-                habitaciones = db.execute(
-                    'SELECT habitacion FROM habitaciones').fetchall()
-                for i in habitaciones:
-                    flash(i, category="info")
-            except Exception as e:
-                flash(e)
-
-            try:
-                eliminar = request.form['eliminar']
-                if len(eliminar) >= 3:
-                    db.execute(
-                        'DELETE FROM habitaciones WHERE habitacion = ?', (eliminar,))
-                    db.commit()
-                    db.close()
-                    exito = True
-                    try:
-                        terminos = request.form['confirma']
-                    except Exception as e:
-                        flash("Debe confirmar eliminación", category="error")
-                        return render_template("eliminar.html")
-                    flash("La habitación fue eliminada exitosamente",
-                          category='success')
-                    return render_template('eliminar.html', exito=exito)
-                flash("Debe ingresar habitación a eliminar", category="error")
-                return render_template('eliminar.html', exito=exito)
-            except Exception as e:
-                exito = False
-                return render_template('eliminar.html', exito=exito)
-    except Exception as e:
-        return render_template('eliminar.html')
-    return render_template('eliminar.html')
+        return render_template('editar.html', superAdmin=superAdmin, admin=admin)
 
 
 @app.route('/superUser', methods=['GET', 'POST'])
 @super_required
 def superUser():
-    db = get_db()
     try:
         if request.method == 'POST':
-            try:
-                usuarios = db.execute(
-                    'SELECT id, Nombre,rol FROM usuarios').fetchall()
-                for i in usuarios:
-                    flash(i, category='info')
+            nombre = request.form['nombre']
+            apellido = request.form['apellido']
+            cedula = request.form['cedula']
+            correo = request.form['correo']
+            sexo = request.form['sexo']
+            fecha = request.form['fechaNacimiento']
+            direccion = request.form['direccion']
+            ciudad = request.form['ciudad']
+            usuario = request.form['usuario']
+            contrasena = request.form['contrasena']
+            confirma = request.form['confirma']
+            cargo = request.form['cargo']
+            rol = request.form['rol']
 
+            if not utils.isUsernameValid(nombre):
+                error = "El nombre no es valido"
+                flash(error,category="error")
+                return render_template('superUser.html', superAdmin=superAdmin, admin=admin)
+
+            if not utils.isEmpty(fecha):
+                error = "La fecha es invalida"
+                flash(error,category="error")
+                return render_template('superUser.html', superAdmin=superAdmin, admin=admin)
+
+            if not utils.isEmpty(direccion):
+                error = "La direccion es invalida"
+                flash(error,category="error")
+                return render_template('superUser.html', superAdmin=superAdmin, admin=admin)
+
+            if not utils.isUsernameValid(apellido):
+                error = "El apellido no es valido"
+                flash(error,category="error")
+                return render_template('superUser.html', superAdmin=superAdmin, admin=admin)
+
+            if not utils.isNumberValid(cedula):
+                error = "El número de documento no es valido"
+                flash(error,category="error")
+                return render_template("superUser.html", superAdmin=superAdmin, admin=admin)
+
+            if not utils.isEmailValid(correo):
+                error = "El correo no es valido"
+                flash(error,category="error")
+                return render_template('superUser.html', superAdmin=superAdmin, admin=admin)
+
+            if not utils.isPasswordValid(contrasena):
+                error = "La contraseña no es valida"
+                flash(error,category="error")
+                return render_template('superUser.html', superAdmin=superAdmin, admin=admin)
+
+            if not utils.isPasswordValid(confirma):
+                error = "La confirmación no es valida"
+                if (contrasena != confirma):
+                    error = "La contraseña debe coincidir con la confirmación"
+                flash(error,category="error")
+                return render_template('superUser.html', superAdmin=superAdmin, admin=admin)
+            if not utils.isEmpty(cargo):
+                error = "El cargo es invalido"
+                flash(error,category="error")
+                return render_template('superUser.html', superAdmin=superAdmin, admin=admin)
+            if not utils.isEmpty(rol):
+                error = "El rol es invalido"
+                flash(error,category="error")
+                return render_template('superUser.html', superAdmin=superAdmin, admin=admin)
+
+            error = None
+            exito = False
+
+            try:
+                terminos = request.form['terminos']
             except Exception as e:
-                flash(e)
+                e = "Debe aceptar los terminos y condiciones antes de avanzar"
+                flash(e,category="error")
+                return render_template("superUser.html")
+            db = get_db()
+
+            demail = db.execute(
+                'SELECT id FROM usuarios WHERE correo=?', (correo,)).fetchone()
+            user = db.execute(
+                'SELECT id FROM usuarios WHERE cedula=?', (cedula,)).fetchone()
+
+            if user is not None:
+                error = 'El usuario ya existe'.format(usuario)
+                flash(error,category="error")
+                return render_template('superUser.html')
+
+            if demail is not None:
+                error = 'El usuario ya existe'.format(correo)
+                flash(error,category="error")
+
                 return render_template('superUser.html')
             try:
-                id_seleccionado = request.form['id']
-                while len(id_seleccionado) < 1:
-                    id_seleccionado = request.form['id']
-                    flash("Debe ingresar el id de usuario", category="error")
-                    return render_template('superUser.html')
-                nuevo = request.form['nuevo']
-                if(len(nuevo) > 0):
-                    db.execute(
-                        'UPDATE usuarios SET Nombre = :nombre WHERE id = :id', {"nombre": nuevo, "id": id_seleccionado})
-                    db.commit()
-                    flash("Se realizo la edicion del nombre de usuario",
-                          category='success')
-                    return render_template('superUser.html')
-            except Exception as e:
-                print("")
-
-            try:
-
-                rol = request.form['estado']
-                db.execute(
-                    'UPDATE usuarios SET rol = :estado WHERE id = :id', {"estado": rol, "id": id_seleccionado})
+                db.execute('INSERT INTO usuarios (nombre,apellido,cedula,correo,sexo,fecha_nacimiento,direccion,ciudad,usuario,contrasena,cargo,rol) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
+                           (nombre, apellido, cedula, correo, sexo, fecha, direccion, ciudad, usuario, generate_password_hash(contrasena), cargo, rol))
                 db.commit()
-
-                flash("Se realizo la edición del rol", category='success')
-                return render_template('superUser.html')
-            except Exception as e:
-                print("")
-            try:
-                db = get_db()
-                eliminar = request.form['eliminar']
-                while len(eliminar) < 1:
-                    eliminar = request.form['eliminar']
-                    flash("Debe ingresar el id de usuario", category="error")
-                    return render_template('superUser.html')
-                db.execute(
-                    'DELETE FROM usuarios WHERE id = ?', (eliminar,))
-                db.commit()
-                try:
-                    terminos = request.form['confirmar']
-                except Exception as e:
-                    print(e)
-                    flash("Debe confirmar eliminación", category="error")
-                    return render_template("superUser.html")
-                flash("Se realizo la eliminación del usuario", category='success')
-                return render_template('superUser.html')
+                db.close()
+                exito = True
+                flash("Usuario creado con exito!",category="success")
+                render_template('superUser.html',
+                                superAdmin=superAdmin, admin=admin)
             except Exception as e:
                 print(e)
-                return render_template('superUser.html')
-        return render_template('superUser.html')
+        return render_template('superUser.html', superAdmin=superAdmin, admin=admin)
     except Exception as e:
-        print(e)
-        return render_template('superUser.html')
+        return render_template('superUser.html', superAdmin=superAdmin, admin=admin)
 
 
 if __name__ == '__main__':

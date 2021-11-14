@@ -3,83 +3,111 @@
 {% block estilo %}
 <link rel="stylesheet" href="/static/css/superUser.css" media=" screen"> {% endblock %}
 {% block contenido %}
-<section class="u-align-center u-clearfix u-section-1" id="sec-9642">
-  <div class=" u-clearfix u-sheet u-sheet-1">
-    <div class=" u-align-left u-container-style u-group u-group-1">
+<section class="u-align-center u-clearfix u-grey-10 u-section-1" id="sec-806e">
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+  {%for message in messages %}
+  <div class="alert alert-danger ">{{message}}</div>
+  {% endfor%}
+  {% endif %}
+  {% endwith %}
+  <div class="u-clearfix u-sheet u-sheet-1">
+    <div class="u-align-center u-container-style u-group u-radius-50 u-shape-round u-white u-group-1">
       <div class="u-container-layout u-container-layout-1">
-        <h2 class="u-text u-text-default u-text-1">Gestor de Usuarios</h2>
-        <div class="u-border-3 u-border-grey-dark-1 u-line u-line-horizontal u-line-1"></div>
+        <h3 class="u-text u-text-default u-text-1">Crea cuenta administrativa</h3>
         <div class="u-form u-form-1">
-          <form action="{{url_for('superUser')}}" method="POST" class="u-clearfix u-form-spacing-15  u-inner-form"
-            style="padding: 15px;" source="custom" name="form">
-            <div class="u-form-group u-form-group-2">
-              <label for="rol" class="u-label">id-Nombre-Rol</label>
-              <textarea rows="5" cols="50" id="rol" name="rol"
-                class="u-border-1 u-border-grey-30 u-input u-input-rectangle">
-                {% with messages = get_flashed_messages(category_filter=["info"]) %}
-                {% if messages %}
-                  {%for message in messages %}
-                {{message}}
-                  {% endfor%}
-                {% endif %}
-                {% endwith %}
-              </textarea>
+          <form name="formulario" method="post" action="{{url_for('superUser')}}"
+            class=" u-clearfix u-form-spacing-10 u-inner-form" style="padding: 5px;">
+            <div class="u-form-group u-form-textarea u-form-group-1">
+              <label for="nombre" class="u-label">Nombre</label>
+              <input rows="1" cols="50" id="nombre" name="nombre"
+                class="u-border-1 u-border-grey-30 u-input u-input-rectangle" type="text">
             </div>
-            <div class="u-align-center u-form-group u-form-submit">
-              <a class="u-btn u-btn-submit u-button-style">Consultar<br>
-              </a>
-              <input type="submit" value="submit" class="u-form-control-hidden">
+            <div class="u-form-group u-form-textarea u-form-group-2">
+              <label for="apellido" class="u-label">Apellido</label>
+              <input rows="1" cols="50" id="apellido" name="apellido"
+                class="u-border-1 u-border-grey-30 u-input u-input-rectangle" type="text">
             </div>
-          </form>
-        </div>
-        <div class="u-form u-form-2">
-          <form action="{{url_for('superUser')}}" method="POST" class="u-clearfix u-form-spacing-15  u-inner-form"
-            style="padding: 15px;" source="custom" name="form">
-            <div class="u-form-group u-form-group-4">
-              <label for="id" class="u-form-control-hidden u-label"></label>
-              <input type="text" placeholder="Identificador de usuario" id="id" name="id"
-                class="mb-3 u-border-1 u-border-grey-30 u-input u-input-rectangle">
+            <div class="u-form-group u-form-textarea u-form-group-2">
+              <label for="cedula" class="u-label">Cedula</label>
+              <input rows="1" cols="50" id="cedula" name="cedula"
+                class="u-border-1 u-border-grey-30 u-input u-input-rectangle" type="text">
             </div>
-            <div class="u-form-group u-form-group-5">
-              <label for="nuevo" class="u-form-control-hidden u-label"></label>
-              <input type="text" placeholder="Ingrese el nuevo nombre(opcional)" id="nuevo" name="nuevo"
-                class="mb-3 u-border-1 u-border-grey-30 u-input u-input-rectangle">
+            <div class="u-form-group u-form-textarea u-form-group-3">
+              <label for="correo" class="u-label">Correo electronico</label>
+              <input rows="1" cols="50" id="correo" name="correo"
+                class="u-border-1 u-border-grey-30 u-input u-input-rectangle" type="text">
             </div>
-            <div class="u-form-group u-form-select u-form-group-6">
-              <label for="estado" class="u-label">Rol</label>
+            <div class="u-form-group u-form-partition-factor-2 u-form-select u-form-group-3">
+              <label for="sexo" class="u-label">Sexo</label>
               <div class="u-form-select-wrapper">
-                <select id="estado" name="estado" class="u-border-1 u-border-grey-30 u-input u-input-rectangle">
-                  <option value="Admin">Admin</option>
-                  <option value="Usuario">Usuario</option>
+                <select id="sexo" name="sexo" class="u-border-1 u-border-grey-30 u-input u-input-rectangle u-white">
+                  <option value="Femenino">F</option>
+                  <option value="Masculino">M</option>
                 </select>
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="12" version="1" class="u-caret">
                   <path fill="currentColor" d="M4 8L0 4h8z"></path>
                 </svg>
               </div>
             </div>
-            <div class="u-align-center u-form-group u-form-submit">
-              <a class="u-btn u-btn-submit u-button-style">Editar<br>
-              </a>
-              <input type="submit" value="submit" class="u-form-control-hidden">
+            <div class="u-form-group u-form-textarea u-form-group-4">
+              <label for="fechaNacimiento" class="u-label">Fecha de nacimiento</label>
+              <input rows="1" cols="50" id="fechaNacimiento" name="fechaNacimiento"
+                class="u-border-1 u-border-grey-30 u-input u-input-rectangle" type="date">
             </div>
-          </form>
-        </div>
-        <div class="u-form u-form-3">
-          <form action="{{url_for('superUser')}}" method="POST" class="u-clearfix u-form-spacing-15  u-inner-form"
-            style="padding: 15px;" source="custom" name="form">
-            <div class="u-form-group u-form-group-8">
-              <label for="eliminar" class="u-label">Usuario a eliminar</label>
-              <input type="text" placeholder="Identificador de usuario" id="eliminar" name="eliminar"
-                class="u-border-1 u-border-grey-30 u-input u-input-rectangle">
+            <div class="u-form-group u-form-textarea u-form-group-5">
+              <label for="direccion" class="u-label">Dirección</label>
+              <input rows="1" cols="50" id="direccion" name="direccion"
+                class="u-border-1 u-border-grey-30 u-input u-input-rectangle" type="text">
             </div>
-            <div class="mt-3 u-form-checkbox u-form-group u-form-group-4">
-              <input type="checkbox" id="confirmar" name="confirmar">
-              <label for="confirmar" class="u-label">Confirmar eliminación</label>
+            <div class="u-form-group u-form-partition-factor-2 u-form-select u-form-group-3">
+              <label for="ciudad" class="u-label">Ciudad</label>
+              <div class="u-form-select-wrapper">
+                <select id="ciudad" name="ciudad" class="u-border-1 u-border-grey-30 u-input u-input-rectangle u-white">
+                  <option value="Bogotá">Bogotá</option>
+                  <option value="Medillín">Medillín</option>
+                  <option value="Cali">Cali</option>
+                  <option value="Barranquilla">Barranquilla</option>
+                  <option value="Cartagena">Cartagena</option>
+                  <option value="Cucuta">Cucuta</option>
+                </select>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="12" version="1" class="u-caret">
+                  <path fill="currentColor" d="M4 8L0 4h8z"></path>
+                </svg>
+              </div>
             </div>
-            <div class="u-align-center u-form-group u-form-submit">
-              <a class="u-btn u-btn-submit u-button-style">Eliminar<br>
-              </a>
-              <input type="submit" value="submit" class="u-form-control-hidden">
+            <div class="u-form-group u-form-textarea u-form-group-7">
+              <label for="usuario" class="u-label">Usuario</label>
+              <input rows="1" cols="50" id="usuario" name="usuario"
+                class="u-border-1 u-border-grey-30 u-input u-input-rectangle" type="text">
+            </div>
+            <div class="u-form-group u-form-textarea u-form-group-7">
+              <label for="contrasena" class="u-label">Contraseña</label>
+              <input rows="1" cols="50" id="contrasena" name="contrasena"
+                class="u-border-1 u-border-grey-30 u-input u-input-rectangle" type="password">
+            </div>
+            <div class="mb-3 u-form-group u-form-textarea u-form-group-7">
+              <label for="confirma" class="u-label">Confirmación</label>
+              <input rows="1" cols="50" id="confirma" name="confirma"
+                class="u-border-1 u-border-grey-30 u-input u-input-rectangle" type="password">
+            </div>
+            <div class="mb-3 u-form-group u-form-textarea u-form-group-7">
+              <label for="cargo" class="u-label">Cargo</label>
+              <input rows="1" cols="50" id="cargo" name="cargo"
+                class="u-border-1 u-border-grey-30 u-input u-input-rectangle" type="text">
+            </div>
+            <div class="mb-3 u-form-group u-form-textarea u-form-group-7">
+              <label for="rol" class="u-label">Rol</label>
+              <input rows="1" cols="50" id="rol" name="rol"
+                class="u-border-1 u-border-grey-30 u-input u-input-rectangle" type="text">
+            </div>
+
+            <div class="u-form-agree u-form-group u-form-group-6">
+              <input type="checkbox" id="terminos" name="terminos" class="u-agree-checkbox">
+              <label for="terminos" class="u-label">Acepto los términos y condiciones</label>
+            </div>
+            <div class="u-align-left u-form-group u-form-submit">
+              <input type="submit" value="Registrarme" class="u-btn u-btn-submit u-button-style">
             </div>
           </form>
         </div>
