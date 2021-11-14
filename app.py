@@ -76,8 +76,6 @@ def iniciar():
             if adminL == 'superAdmin':
                 superAdmin = True
             inicioS = True
-            print(superAdmin)
-            print(admin)
             return redirect(url_for('productos'))
         return render_template('iniciar.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin)
     except Exception as e:
@@ -203,7 +201,6 @@ def registro():
                 e = "Debe aceptar los terminos y condiciones antes de avanzar"
                 flash(e)
                 return render_template("registro.html")
-            print("c")
             db = get_db()
 
             demail = db.execute(
@@ -222,17 +219,15 @@ def registro():
                 flash(error)
 
                 return render_template('registro.html')
-            print("d")
             try:
-                db.execute('INSERT INTO usuarios (nombre,apellido,cedula,correo,sexo,fecha_nacimiento,direccion,ciudad,usuario,contraseña) VALUES (?,?,?,?,?,?,?,?,?,?)',
+                db.execute('INSERT INTO usuarios (nombre,apellido,cedula,correo,sexo,fecha_nacimiento,direccion,ciudad,usuario,contrasena) VALUES (?,?,?,?,?,?,?,?,?,?)',
                            (nombre, apellido, cedula, correo, sexo, fecha, direccion, ciudad, usuario, generate_password_hash(contrasena)))
                 db.commit()
                 db.close()
                 exito = True
-                print("e")
                 render_template('registro.html')
             except Exception as e:
-                print("")
+                print(e)
             return redirect(url_for('iniciar'))
         return render_template('registro.html')
     except Exception as e:
@@ -267,7 +262,7 @@ def recuperar():
             id_usuario = id_usuario.replace("'", "")
             id_usuario = id_usuario.replace(",", "")
             id_usuario = id_usuario.replace('"', '')
-            codigo =  db.execute(
+            codigo = db.execute(
                 'SELECT contrasena FROM usuarios WHERE correo=?', (email,)).fetchone()
             codigo = str(codigo)
             codigo = codigo.replace('(', '')
@@ -278,14 +273,12 @@ def recuperar():
             db.execute(
                 'UPDATE estadoCuenta SET codigo_seguridad = :nuevoCodigo WHERE id_usuarios = :id', {"nuevoCodigo": codigo, "id": id_usuario})
             recupera_contenido = (
-                'Para restablecer tu contraseña ingresa al enlace y utiliza tu codigo de seguridad(recuerda usarlo sin espacios)\n\nCodigo:%s\n\nEnlace:%s') % (codigo,"link: localhost:5000/restablecer")
+                'Para restablecer tu contraseña ingresa al enlace y utiliza tu codigo de seguridad(recuerda usarlo sin espacios)\n\nCodigo:%s\n\nEnlace:%s') % (codigo, "link: localhost:5000/restablecer")
             yag.send(to=email, subject=tema_recupera,
-                   contents=recupera_contenido)
+                     contents=recupera_contenido)
             db.commit()
             db.close()
             flash('Hemos enviado un mensaje a su correo')
-            print(recupera_contenido)
-            print(id_usuario)
             return render_template('recuperar.html', inicioS=inicioS, exito=exito)
         return render_template('recuperar.html', inicioS=inicioS)
     except Exception as e:
@@ -306,21 +299,18 @@ def restablecer():
             if validacion is None:
                 error = "El codigo no es valido"
                 flash(error, category="info")
-                print(error)
                 return render_template("restablecer.html")
             print(validacion)
             if not utils.isPasswordValid(nueva):
                 error = "La contraseña no es valida"
                 flash(error, category="info")
                 return render_template("restablecer.html")
-            print("AJA8")
             if not utils.isPasswordValid(confirma):
                 error = "La confirmación no es valida"
                 if (nueva != confirma):
                     error = "La contraseña debe coincidir con la confirmación"
                 flash(error, category="info")
                 return render_template("restablecer.html")
-            print("AJA4")
             validacion = db.execute(
                 'SELECT codigo_seguridad FROM estadoCuenta WHERE codigo_seguridad=?', (id_u,)).fetchone()
             id_usuario = db.execute(
@@ -331,7 +321,6 @@ def restablecer():
             id_usuario = id_usuario.replace("'", "")
             id_usuario = id_usuario.replace(",", "")
             id_usuario = id_usuario.replace('"', '')
-            print(id_usuario)
             db.execute(
                 'UPDATE usuarios SET contrasena  = :nueva WHERE id = :id', {"nueva": generate_password_hash(nueva), "id": id_usuario})
             nuevaSeguridad = db.execute(
@@ -342,7 +331,6 @@ def restablecer():
             nuevaSeguridad = nuevaSeguridad.replace("'", "")
             nuevaSeguridad = nuevaSeguridad.replace(",", "")
             nuevaSeguridad = nuevaSeguridad.replace('"', '')
-            print(nuevaSeguridad)
             db.execute(
                 'UPDATE estadoCuenta SET codigo_seguridad = :nuevoCodigo WHERE id_usuarios = :id', {"nuevoCodigo": nuevaSeguridad, "id": id_usuario})
             db.commit()
@@ -368,104 +356,131 @@ def productos():
     return render_template("productos.html", productos=productos, inicioS=inicioS, superAdmin=superAdmin, admin=admin)
 
 
-@app.route('/calificacion', methods=['GET', 'POST'])
-@login_required
-def calificacion():
-    db = get_db()
-    lista = db.execute(
-        'SELECT habitacion FROM habitaciones WHERE estado = "Disponible" ').fetchall()
-    try:
-        if request.method == 'POST':
-            limpieza = request.form['limpieza']
-            atencion = request.form['atencion']
-            conectividad = request.form['conectividad']
-            servicio = request.form['habitacion']
-            comentario = request.form['comentario']
-            exito = False
-            promedio = float((int(limpieza) + int(atencion) +
-                             int(conectividad) + int(servicio)))/4
-            id_user = session.get('user_id')
-            try:
-                numero = db.execute(
-                    'SELECT * FROM Reservas WHERE id_usuario= ?', (id_user,)).fetchone()
-                nombre = db.execute(
-                    'SELECT Nombre FROM usuarios WHERE id=?', (id_user,)).fetchone()
-                llegada = db.execute(
-                    'SELECT llegada FROM Reservas WHERE id_usuario= ?', (id_user,)).fetchone()
-                nombre = str(nombre)
-                llegada = str(llegada)
-                id_hab = numero[3]
-                db.execute('INSERT INTO Comentarios (Calificacion,Comentario,id_Usuario,id_Habitacion,id_llegada) VALUES (?,?,?,?,?)',
-                           (promedio, comentario, nombre, id_hab, llegada))
-                db.commit()
-                db.close()
-                exito = True
-                flash("Gracias por comentar su experiencia!")
-            except Exception as e:
-                flash("Primero debes reservar una habitación")
-                return render_template('reserva.html', inicioS=inicioS, exito=exito, lista=lista)
-            return render_template('calificacion.html', inicioS=inicioS, exito=exito)
-        return render_template('calificacion.html', inicioS=inicioS)
-    except Exception as e:
-        return render_template('calificacion.html', inicioS=inicioS)
-
-
-@app.route('/comentarios', methods=['GET'])
-def comentarios():
-    try:
-        db = get_db()
-        nombre = db.execute(
-            'SELECT id_Usuario FROM Comentarios').fetchall()
-        fecha = db.execute(
-            'SELECT id_llegada FROM Comentarios').fetchall()
-        comentarios = db.execute(
-            'SELECT Comentario FROM Comentarios').fetchall()
-        tamano = len(comentarios)
-        for i in range(len(nombre)):
-            nombre[i] = str(nombre[i]).replace('(', '')
-            nombre[i] = str(nombre[i]).replace(')', '')
-            nombre[i] = str(nombre[i]).replace("'", "")
-            nombre[i] = str(nombre[i]).replace(",", "")
-            nombre[i] = str(nombre[i]).replace('"', '')
-        for i in range(len(fecha)):
-            fecha[i] = str(fecha[i]).replace('(', '')
-            fecha[i] = str(fecha[i]).replace(')', '')
-            fecha[i] = str(fecha[i]).replace("'", "")
-            fecha[i] = str(fecha[i]).replace(",", "")
-            fecha[i] = str(fecha[i]).replace('"', '')
-        for i in range(len(comentarios)):
-            comentarios[i] = str(comentarios[i]).replace('(', '')
-            comentarios[i] = str(comentarios[i]).replace(')', '')
-            comentarios[i] = str(comentarios[i]).replace("'", "")
-            comentarios[i] = str(comentarios[i]).replace(",", "")
-            comentarios[i] = str(comentarios[i]).replace('"', '')
-
-        db.commit()
-        db.close()
-        return render_template('comentarios.html', inicioS=inicioS, nombre=nombre, fecha=fecha, comentarios=comentarios, tamano=tamano)
-    except Exception as e:
-        flash(e)
-    return render_template('comentarios.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin)
-
 
 @app.route('/cambiar', methods=['GET', 'POST'])
+@login_required
 def cambiar():
-    return render_template('cambiar.html')
+    try:
+        if request.method == 'POST':
+            db = get_db()
+            anterior = request.form['anterior']
+            nueva = request.form['nueva']
+            confirma = request.form['confirma']
+            user = db.execute(
+                'SELECT * FROM usuarios WHERE id= ?', (session['user_id'], )).fetchone()
+            store_password = user[10]
+            if not utils.isEmpty(anterior):
+                error = "La contraseña anterior no es invalida"
+                flash(error,category='info')
+                return render_template('cambiar.html',inicioS=inicioS, superAdmin=superAdmin, admin=admin)
+            result = check_password_hash(store_password, anterior)
+            if result is False:
+                    error = 'La contraseña no coincide!'
+                    flash(error,category="info")
+                    return render_template('cambiar.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin)
+            if not utils.isPasswordValid(nueva):
+                error = "La contraseña no es valida"
+                flash(error, category="info")
+                return render_template('cambiar.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin)
+            if not utils.isPasswordValid(confirma):
+                error = "La confirmación no es valida"
+                if (nueva != confirma):
+                    error = "La contraseña debe coincidir con la confirmación"
+                flash(error, category="info")
+                return render_template('cambiar.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin)
+            db.execute(
+                'UPDATE usuarios SET contrasena  = :nueva WHERE id = :id', {"nueva": generate_password_hash(nueva), "id": session['user_id']})
+            db.commit()
+            db.close()
+            flash("Se ha cambiado su contraseña", category="success")
+            return render_template('cambiar.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin)
+        return render_template('cambiar.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin)
+    except Exception as e:
+        print(e)
+        return render_template('cambiar.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin)
+    
 
-@login_required
+
 @app.route('/perfil', methods=['GET', 'POST'])
+@login_required
 def perfil():
-    return render_template('perfil.html')
+    db = get_db()
+    id_user = g.user[0]
+    nombre = g.user[1]
+    apellido = g.user[2]
+    sexo = g.user[5]
+    fecha = g.user[6]
+    direccion = g.user[7]
+    ciudad = g.user[8]
+    numeroCompras = db.execute(
+        'SELECT acumuladoCompras FROM compras WHERE id_usuarios=?', (id_user,)).fetchone()
+    bonos = db.execute(
+        'SELECT numeroBonos FROM compras WHERE id_usuarios=?', (id_user,)).fetchone()
+    try:
+        if request.method == 'POST':
+            nombreC = request.form['nombre']
+            apellidoC = request.form['apellido']
+            sexoC = request.form['sexo']
+            fechaC = request.form['fechaNacimiento']
+            direccionC = request.form['direccion']
+            ciudadC = request.form['ciudad']
+            if not utils.isEmpty(nombreC):
+                error = "El nombre es invalido"
+                flash(error,category='info')
+                return render_template('perfil.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin, nombre=nombre, apellido=apellido, sexo=sexo, fecha=fecha, direccion=direccion, ciudad=ciudad, numeroCompras=numeroCompras, bonos=bonos)
+            if not utils.isEmpty(apellidoC):
+                error = "El apellido es invalido"
+                flash(error,category='info')
+                return render_template('perfil.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin, nombre=nombre, apellido=apellido, sexo=sexo, fecha=fecha, direccion=direccion, ciudad=ciudad, numeroCompras=numeroCompras, bonos=bonos)
+            if not utils.isEmpty(sexoC):
+                error = "El sexo es invalido"
+                flash(error,category='info')
+                return render_template('perfil.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin, nombre=nombre, apellido=apellido, sexo=sexo, fecha=fecha, direccion=direccion, ciudad=ciudad, numeroCompras=numeroCompras, bonos=bonos)
+            if not utils.isEmpty(direccionC):
+                error = "La dirección es invalida"
+                flash(error,category='info')
+                return render_template('perfil.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin, nombre=nombre, apellido=apellido, sexo=sexo, fecha=fecha, direccion=direccion, ciudad=ciudad, numeroCompras=numeroCompras, bonos=bonos)
+            if not utils.isEmpty(ciudad):
+                error = "La ciudad es invalida"
+                flash(error,category='info')
+                return render_template('perfil.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin, nombre=nombre, apellido=apellido, sexo=sexo, fecha=fecha, direccion=direccion, ciudad=ciudad, numeroCompras=numeroCompras, bonos=bonos)
 
+            db.execute(
+                'UPDATE usuarios SET nombre = :nombre, apellido = :apellido, sexo = :sexo, fecha_nacimiento = :fecha, direccion = :direccion, ciudad = :ciudad WHERE id = :id', {"nombre": nombreC, "apellido": apellidoC, "sexo": sexoC, "fecha": fechaC, "direccion": direccionC, "ciudad": ciudadC,"id":id_user})
+            db.commit()
+            db.close()
+            flash("Recargue la pagina para ver los cambios!",category="success")
+            return render_template('perfil.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin, nombre=nombre, apellido=apellido, sexo=sexo, fecha=fecha, direccion=direccion, ciudad=ciudad, numeroCompras=numeroCompras, bonos=bonos)
+        return render_template('perfil.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin, nombre=nombre, apellido=apellido, sexo=sexo, fecha=fecha, direccion=direccion, ciudad=ciudad, numeroCompras=numeroCompras, bonos=bonos)
+    except Exception as e:
+        print(e)
+    return render_template('perfil.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin, nombre=nombre, apellido=apellido, sexo=sexo, fecha=fecha, direccion=direccion, ciudad=ciudad, numeroCompras=numeroCompras, bonos=bonos)
+
+
+@app.route('/eliminarCuenta', methods=['GET'])
 @login_required
+def eliminarCuenta():
+    if request.method == 'GET':
+        id_usuario = session['user_id']
+        db = get_db()
+        db.execute("DELETE FROM usuarios WHERE id= :id",{"id":id_usuario})
+        db.commit()
+        db.close()
+    return render_template("index.html")
+
+    
+
 @app.route('/listaDeseos', methods=['GET', 'POST'])
-def listaDeseos():
-    return render_template('listaDeseos.html')
-
 @login_required
+def listaDeseos():
+    return render_template('listaDeseos.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin)
+
+
 @app.route('/carrito', methods=['GET', 'POST'])
+@login_required
 def carrito():
-    return render_template('carrito.html')
+
+    return render_template('carrito.html', inicioS=inicioS, superAdmin=superAdmin, admin=admin)
 
 
 @app.route('/herramientas', methods=['GET'])
@@ -676,12 +691,9 @@ def superUser():
                 print("")
             try:
                 db = get_db()
-                print("a")
                 eliminar = request.form['eliminar']
-                print("a")
                 while len(eliminar) < 1:
                     eliminar = request.form['eliminar']
-                    print("b")
                     flash("Debe ingresar el id de usuario", category="error")
                     return render_template('superUser.html')
                 db.execute(

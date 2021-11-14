@@ -5,6 +5,13 @@
 {% block contenido %}
 
 <section class="u-align-left u-clearfix u-grey-10 u-section-1" id="sec-000c">
+  {% with messages = get_flashed_messages(category_filter=["success"]) %}
+{% if messages %}
+{%for message in messages %}
+<div class="alert alert-success text-center">{{message}}</div>
+{% endfor%}
+{% endif %}
+{% endwith %}
   <div class="u-clearfix u-sheet u-valign-middle u-sheet-1">
     <div class="u-container-style u-group u-radius-50 u-shape-round u-white u-group-1">
       <div class="u-container-layout u-container-layout-1">
@@ -15,59 +22,75 @@
             <div class="u-form-group u-form-textarea u-form-group-1">
               <label for="nombre" class="u-label">Nombre</label>
               <input rows="1" cols="50" id="nombre" name="nombre"
-                class="u-border-1 u-border-grey-30 u-input u-input-rectangle" type="text">
+                class="u-border-1 u-border-grey-30 u-input u-input-rectangle" type="text" value="{{nombre}}">
             </div>
             <div class="u-form-group u-form-textarea u-form-group-2">
               <label for="apellido" class="u-label">Apellido</label>
               <input rows="1" cols="50" id="apellido" name="apellido"
-                class="u-border-1 u-border-grey-30 u-input u-input-rectangle"  type="text">
+                class="u-border-1 u-border-grey-30 u-input u-input-rectangle"  type="text" value="{{apellido}}">
             </div>
             <div class="u-form-group u-form-textarea u-form-group-3">
               <label for="sexo" class="u-label">Sexo</label>
               <input rows="1" cols="50" id="sexo" name="sexo"
-                class="u-border-1 u-border-grey-30 u-input u-input-rectangle"  type="text">
+                class="u-border-1 u-border-grey-30 u-input u-input-rectangle"  type="text" value="{{sexo}}">
             </div>
             <div class="u-form-group u-form-textarea u-form-group-4">
               <label for="fechaNacimiento" class="u-label">Fecha de nacimiento</label>
               <input rows="1" cols="50" id="fechaNacimiento" name="fechaNacimiento"
-                class="u-border-1 u-border-grey-30 u-input u-input-rectangle"  type="text">
+                class="u-border-1 u-border-grey-30 u-input u-input-rectangle"  type="text" value="{{fecha}}">
             </div>
             <div class="u-form-group u-form-textarea u-form-group-5">
               <label for="direccion" class="u-label">Dirección</label>
               <input rows="1" cols="50" id="direccion" name="direccion"
-                class="u-border-1 u-border-grey-30 u-input u-input-rectangle"  type="text">
+                class="u-border-1 u-border-grey-30 u-input u-input-rectangle"  type="text" value="{{direccion}}">
             </div>
             <div class="u-form-group u-form-textarea u-form-group-6">
               <label for="ciudad" class="u-label">Ciudad</label>
               <input rows="1" cols="50" id="ciudad" name="ciudad"
-                class="u-border-1 u-border-grey-30 u-input u-input-rectangle"  type="text">
+                class="u-border-1 u-border-grey-30 u-input u-input-rectangle"  type="text" value="{{ciudad}}">
             </div>
             <div class="u-form-group u-form-textarea u-form-group-7">
-              <label for="usuario" class="u-label">Usuario</label>
-              <input rows="1" cols="50" id="usuario" name="usuario"
-                class="u-border-1 u-border-grey-30 u-input u-input-rectangle"  type="text">
+              <label for="compras" class="u-label">Numero de compras</label>
+              <input rows="1" cols="50" id="compras" name="compras"
+                class="u-border-1 u-border-grey-30 u-input u-input-rectangle"  type="text" value="{{numeroCompras}}"> 
             </div>
-            <div class="u-align-left u-form-submit">
-              <a href="#"
+            <div class="u-form-group u-form-textarea u-form-group-7">
+              <label for="bonos" class="u-label">Bonos de descuento</label>
+              <input rows="1" cols="50" id="bonos" name="bonos"
+                class="u-border-1 u-border-grey-30 u-input u-input-rectangle"  type="text" value="{{bonos}}">
+            </div>
+            <div class="u-align-left">
+              <a href="/cambiar"
                 class="u-btn-submit u-btn u-btn-round u-button-style u-palette-1-base u-radius-50 u-btn-1"><span
                   class="u-icon"></span>&nbsp;Cambiar contraseña<br>
               </a>
               <input type="submit" value="submit" class="u-form-control-hidden">
             </div>
+            <div class="u-align-left">
+              <a href="/eliminarCuenta"
+                class="u-btn u-btn-round u-button-style u-palette-1-base u-radius-50 u-btn-1"><span
+                  class="u-icon"></span>&nbsp;Eliminar cuenta<br>
+              </a>
+              <input type="submit" value="submit" class="u-form-control-hidden">
+            </div>
             <div class="u-align-left u-form-submit">
               <a href="#"
-                class="u-btn-submit u-btn u-btn-round u-button-style u-palette-1-base u-radius-50 u-btn-1"><span
-                  class="u-icon"></span>&nbsp;Eliminar cuenta<br>
+                class="u-btn u-btn-round u-button-style u-radius-50 u-btn-2"><span
+                  class="u-icon"></span>&nbsp;Actualizar<br>
               </a>
               <input type="submit" value="submit" class="u-form-control-hidden">
             </div>
           </form>
         </div>
-        <a href=""
-          class="u-btn u-btn-round u-button-style u-radius-50 u-btn-2">Actualizar</a>
       </div>
     </div>
   </div>
 </section>
-
+{% with messages = get_flashed_messages(category_filter=["info"]) %}
+{% if messages %}
+{%for message in messages %}
+<div class="alert alert-danger text-center">{{message}}</div>
+{% endfor%}
+{% endif %}
+{% endwith %}
 {% endblock %}
